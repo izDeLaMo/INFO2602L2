@@ -20,9 +20,28 @@ class User(db.Model):
     self.email = email
     self.set_password(password)
 
-  def add_todo_category(todo_id, category):
+  def add_todo_category(self, todo_id, category):
     print (todo_id, category)
-    return TRUE
+    try:
+      existing_category = Category.query.filter_by(user_id=self.id, text=category).first()
+      if not existing_category:
+        existing_category = Category(self.id, category)
+        db.session.add(existing_category)
+        db.session.commit()
+      user_Todo = Todo.query.filter_by(id=todo_id, user_id=self.id).first()
+      if not user_Todo:
+        return False
+  
+      existing_category.todos.append(user_Todo)
+      db.session.add(existing_category)
+      db.session.commit()
+    except Expection as e:
+      print("An error has occured)")
+      db.session.rollback()
+      return False
+    else:
+        return True
+
   
   def set_password(self, password):
     """Create hashed password."""
